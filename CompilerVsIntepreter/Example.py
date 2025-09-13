@@ -1,4 +1,4 @@
-c = 30
+c = 55
 
 input1 = int(input("Enter an integer: "))
 Sum = c + input1
