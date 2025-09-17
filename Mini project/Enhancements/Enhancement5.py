@@ -85,7 +85,7 @@ def get_player_name():
     if playerName.strip() == "":
         playerName = "Guest"
     print(f"Welcome, {playerName}! Let's play Rock, Paper, Scissors.\n")
-    return playerName.capitalize()
+    return playerName
 #endregion
 
 #region ##### Main code #####

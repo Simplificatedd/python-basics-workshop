@@ -1,4 +1,4 @@
-# Enhancement 6: Refactor winning logic to use a dictionary
+# Enhancement 8: Add move history (type 'history' or 'h' to view)
 
 #region ##### import #####
 import random
@@ -17,6 +17,12 @@ winningDictionary = {
     'paper': 'rock',
     'scissors': 'paper'
 }
+winMessage = ["Great job!", "Well played!", "You're on fire!", "Keep it up!", "Fantastic!"]
+loseMessage = ["Don't give up!", "Keep trying!", "You'll win the next round!", "Stay positive!", "Chin up!"]
+drawMessage = ["You think like CPU!", "So close!", "Stalemate!", "Close one!", "Held you off!"]
+computerMoveHistory = []
+playerMoveHistory = []
+historyCommands = ['history', 'h']
 #endregion
 
 #region ##### Functions #####
@@ -40,6 +46,10 @@ def get_computer_move():
     return computerMove
 
 def display_moves(playerMove, computerMove):
+    playerMove = playerMove.capitalize()
+    computerMove = computerMove.capitalize()
+    playerMoveHistory.append(playerMove)
+    computerMoveHistory.append(computerMove)
     print(f"You chose {playerMove}.")
     print(f"CPU chose {computerMove}.")
 
@@ -52,13 +62,16 @@ def decide_outcome(playerMove, computerMove):
 
 def show_conclusion(outcome, drawCount, winCount, lossCount):
     if outcome == 1:
-        print("It is a draw.\n")
+        print("\nIt is a draw.")
+        display_random_message(drawMessage)
         drawCount += 1
     elif outcome == 2:
-        print("You won!\n")
+        print("\nYou won!")
+        display_random_message(winMessage)
         winCount += 1
     elif outcome == 3:
-        print("You lost!\n")
+        print("\nYou lost!")
+        display_random_message(loseMessage)
         lossCount += 1
     return drawCount, winCount, lossCount
 
@@ -90,13 +103,32 @@ def get_player_name():
     if playerName.strip() == "":
         playerName = "Guest"
     print(f"Welcome, {playerName}! Let's play Rock, Paper, Scissors.\n")
-    return playerName
+    return playerName.capitalize()
+
+def display_random_message(messageList):
+    print(random.choice(messageList))
+
+def check_history(playerMove):
+    if playerMove in historyCommands:
+        display_history()
+        return True
+    return False
+
+def display_history():
+    print("\n-----Move History-----")
+    print("Round\tPlayer\tCPU")
+    for i in range(len(playerMoveHistory)):
+        print(f"{i+1}\t{playerMoveHistory[i].capitalize()}\t{computerMoveHistory[i].capitalize()}")
+    print("------------------------")
 #endregion
 
 #region ##### Main code #####
 playerName = get_player_name()
 playerMove = get_player_move()
 while(not check_exit(playerMove)):
+    if check_history(playerMove):
+        playerMove = get_player_move()
+        continue
 
     if validate_player_move(playerMove):
         computerMove = get_computer_move()
