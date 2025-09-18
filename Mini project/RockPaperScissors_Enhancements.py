@@ -7,6 +7,7 @@
 # Enhancement 7: Add randomized winner and loser messages, capitalize names and moves
 # Enhancement 8: Add move history (type 'history' or 'h' to view)
 # Enhancement 9: Add 2 new gamemodes - "Best of n" and "First to n"
+# Enhancement 10: Final refactor and cleanup of code
 
 #region ##### import #####
 import random
@@ -24,9 +25,9 @@ winningDictionary = {
 winMessage = ["Great job!", "Well played!", "You're on fire!", "Keep it up!", "Fantastic!"]
 loseMessage = ["Don't give up!", "Keep trying!", "You'll win the next round!", "Stay positive!", "Chin up!"]
 drawMessage = ["You think like CPU!", "So close!", "Stalemate!", "Close one!", "Held you off!"]
-computerMoveHistory = []
-playerMoveHistory = []
+moveHistory = {name : [] for name in ['Player', 'CPU']}
 historyCommands = ['history', 'h']
+winCount = lossCount = drawCount = roundCount = 0
 #endregion
 
 #region ##### Functions #####
@@ -52,8 +53,8 @@ def get_computer_move():
 def display_moves(playerMove, computerMove):
     playerMove = playerMove.capitalize()
     computerMove = computerMove.capitalize()
-    playerMoveHistory.append(playerMove)
-    computerMoveHistory.append(computerMove)
+    moveHistory['Player'].append(playerMove)
+    moveHistory['CPU'].append(computerMove)
     print(f"You chose {playerMove}.")
     print(f"CPU chose {computerMove}.")
 
@@ -130,55 +131,31 @@ def check_history(playerMove):
 def display_history():
     print("\n-----Move History-----")
     print("Round\tPlayer\tCPU")
-    for i in range(len(playerMoveHistory)):
-        print(f"{i+1}\t{playerMoveHistory[i].capitalize()}\t{computerMoveHistory[i].capitalize()}")
+    for i in range(len(moveHistory['Player'])):
+        print(f"{i+1}\t{moveHistory['Player'][i].capitalize()}\t{moveHistory['CPU'][i].capitalize()}")
     print("------------------------")
 
-def gamemode3(): # Default mode
-    playerName = get_player_name()
-    winCount = 0
-    lossCount = 0
-    drawCount = 0
-    roundCount = 0
-    playerMove = get_player_move()
+def gamemode3(playerName): # Default mode
+    global drawCount, winCount, lossCount, roundCount
+    playerMove = "placeholder"
     while(not check_exit(playerMove)):
+        playerMove = get_player_move()
         if check_history(playerMove):
             playerMove = get_player_move()
             continue
 
         if validate_player_move(playerMove):
-            computerMove = get_computer_move()
-            display_moves(playerMove, computerMove)
-            outcome = decide_outcome(playerMove, computerMove)
-            drawCount, winCount, lossCount = show_conclusion(outcome, drawCount, winCount, lossCount)
-            playerMove = get_player_move()
-
+            main_game(playerMove)
         else:
             print("Invalid move. Please enter 'Rock', 'Paper', or 'Scissors'.")
-            playerMove = get_player_move()
 
         roundCount += 1
 
     display_stats(drawCount, winCount, lossCount, roundCount, playerName)
 
-def gamemode1(): # Best of n
-    playerName = get_player_name()
-    winCount = 0
-    lossCount = 0
-    drawCount = 0
-    roundCount = 0
-    n = input("Enter an odd number for 'Best of n': ")
-    if n.isdigit():
-        n = int(n)
-    else:
-        n = 2
-    while n % 2 == 0 and n < 0:
-        print("Please enter a valid odd number.")
-        n = input("Enter an odd number for 'Best of n': ")
-        if n.isdigit():
-            n = int(n)
-        else:
-            n = 2
+def gamemode1(playerName): # Best of n
+    global drawCount, winCount, lossCount, roundCount
+    n = validate_input("odd n")
     
     roundsToWin = n // 2 + 1
 
@@ -190,11 +167,7 @@ def gamemode1(): # Best of n
             continue
 
         if validate_player_move(playerMove):
-            computerMove = get_computer_move()
-            display_moves(playerMove, computerMove)
-            outcome = decide_outcome(playerMove, computerMove)
-            drawCount, winCount, lossCount = show_conclusion(outcome, drawCount, winCount, lossCount)
-            roundCount += 1
+            main_game(playerMove)
         else:
             print("Invalid move. Please enter 'Rock', 'Paper', or 'Scissors'.")
     if winCount > lossCount:
@@ -205,21 +178,9 @@ def gamemode1(): # Best of n
         print(f"\nThe best of {n} series ended in a tie!")
     display_stats(drawCount, winCount, lossCount, roundCount, playerName, True)
 
-def gamemode2(): # First to n
-    playerName = get_player_name()
-    winCount = 0
-    lossCount = 0
-    drawCount = 0
-    roundCount = 0
-    while True:
-        n = input("Enter a number for 'First to n': ")
-        if n.isdigit():
-            n = int(n)
-        else:
-            n = -1
-        if n > 0:
-            break
-        print("Please enter a valid positive integer.")
+def gamemode2(playerName): # First to n
+    global drawCount, winCount, lossCount, roundCount
+    n = validate_input("positive n")
 
     while winCount < n and lossCount < n:
         playerMove = get_player_move()
@@ -229,11 +190,7 @@ def gamemode2(): # First to n
             continue
 
         if validate_player_move(playerMove):
-            computerMove = get_computer_move()
-            display_moves(playerMove, computerMove)
-            outcome = decide_outcome(playerMove, computerMove)
-            drawCount, winCount, lossCount = show_conclusion(outcome, drawCount, winCount, lossCount)
-            roundCount += 1
+            main_game(playerMove)
         else:
             print("Invalid move. Please enter 'Rock', 'Paper', or 'Scissors'.")
     if winCount == n:
@@ -241,6 +198,62 @@ def gamemode2(): # First to n
     elif lossCount == n:
         print(f"\nSorry {playerName}, CPU reached {n} wins first.")
     display_stats(drawCount, winCount, lossCount, roundCount, playerName, True)
+
+def validate_input(usecase):
+    if usecase == "mode":
+        return validate_mode()
+    elif usecase == "positive n":
+        return validate_positive_n()
+    elif usecase == "odd n":
+        return validate_odd_n()
+
+def validate_mode():
+    selection = input("Enter 1, 2, or 3: ")
+    mode = int(selection) if selection.isdigit() else 3
+    while mode not in [1, 2, 3]:
+        print("Invalid selection. Please enter 1, 2, or 3.")
+        selection = input("Enter 1, 2, or 3: ")
+        mode = int(selection) if selection.isdigit() else 3
+    return mode
+
+def validate_positive_n():
+    n = input("Enter a number for 'First to n': ")
+    if n.isdigit():
+        n = int(n)
+    else:
+        n = -1
+    while n <= 0:
+        print("Please enter a valid positive integer.")
+        n = input("Enter a number for 'First to n': ")
+        if n.isdigit():
+            n = int(n)
+        else:
+            n = -1
+    return n
+
+def validate_odd_n():
+    n = input("Enter an odd number for 'Best of n': ")
+    if n.isdigit():
+        n = int(n)
+    else:
+        n = 2
+    while n % 2 == 0 and n > 0:
+        print("Please enter a valid odd number.")
+        n = input("Enter an odd number for 'Best of n': ")
+        if n.isdigit():
+            n = int(n)
+        else:
+            n = 2
+    return n
+
+def main_game(playerMove):
+    global drawCount, winCount, lossCount, roundCount
+    computerMove = get_computer_move()
+    display_moves(playerMove, computerMove)
+    outcome = decide_outcome(playerMove, computerMove)
+    drawCount, winCount, lossCount = show_conclusion(outcome, drawCount, winCount, lossCount)
+    roundCount += 1
+    return
 #endregion
 
 #region ##### Main code #####
@@ -248,17 +261,15 @@ print("Select a game mode:")
 print("1. Best of n")
 print("2. First to n")
 print("3. Play until \"exit\" or \"quit\" is mentioned (default)")
-selection = input("Enter 1, 2, or 3: ")
-mode = int(selection) if selection.isdigit() else 3
-while mode not in [1, 2, 3]:
-    print("Invalid selection. Please enter 1, 2, or 3.")
-    selection = input("Enter 1, 2, or 3: ")
-    mode = int(selection) if selection.isdigit() else 3
+mode = validate_input("mode")
 print(f"{mode} selected.")
 if mode == 1:
-    gamemode1()
+    playerName = get_player_name()
+    gamemode1(playerName)
 elif mode == 2:
-    gamemode2()
+    playerName = get_player_name()
+    gamemode2(playerName)
 else:
-    gamemode3()
+    playerName = get_player_name()
+    gamemode3(playerName)
 #endregion
