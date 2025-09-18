@@ -5,6 +5,7 @@
 # Enhancement 5: Keep track and display the number of rounds played and saves the player's name
 # Enhancement 6: Refactor winning logic to use a dictionary
 # Enhancement 7: Add randomized winner and loser messages, capitalize names and moves
+# Enhancement 8: Add move history (type 'history' or 'h' to view)
 
 #region ##### import #####
 import random
@@ -26,6 +27,9 @@ winningDictionary = {
 winMessage = ["Great job!", "Well played!", "You're on fire!", "Keep it up!", "Fantastic!"]
 loseMessage = ["Don't give up!", "Keep trying!", "You'll win the next round!", "Stay positive!", "Chin up!"]
 drawMessage = ["You think like CPU!", "So close!", "Stalemate!", "Close one!", "Held you off!"]
+computerMoveHistory = []
+playerMoveHistory = []
+historyCommands = ['history', 'h']
 #endregion
 
 #region ##### Functions #####
@@ -51,6 +55,8 @@ def get_computer_move():
 def display_moves(playerMove, computerMove):
     playerMove = playerMove.capitalize()
     computerMove = computerMove.capitalize()
+    playerMoveHistory.append(playerMove)
+    computerMoveHistory.append(computerMove)
     print(f"You chose {playerMove}.")
     print(f"CPU chose {computerMove}.")
 
@@ -108,12 +114,28 @@ def get_player_name():
 
 def display_random_message(messageList):
     print(random.choice(messageList))
+
+def check_history(playerMove):
+    if playerMove in historyCommands:
+        display_history()
+        return True
+    return False
+
+def display_history():
+    print("\n-----Move History-----")
+    print("Round\tPlayer\tCPU")
+    for i in range(len(playerMoveHistory)):
+        print(f"{i+1}\t{playerMoveHistory[i].capitalize()}\t{computerMoveHistory[i].capitalize()}")
+    print("------------------------")
 #endregion
 
 #region ##### Main code #####
 playerName = get_player_name()
 playerMove = get_player_move()
 while(not check_exit(playerMove)):
+    if check_history(playerMove):
+        playerMove = get_player_move()
+        continue
 
     if validate_player_move(playerMove):
         computerMove = get_computer_move()
