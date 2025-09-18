@@ -3,6 +3,7 @@
 # Enhancement 3: Allow user to input "r", "p", "s", "q" or "e" as shortcuts for moves and exit commands
 # Enhancement 4: Keep track and display the number of wins, losses, and draws
 # Enhancement 5: Keep track and display the number of rounds played and saves the player's name
+# Enhancement 6: Refactor winning logic to use a dictionary
 
 #region ##### import #####
 import random
@@ -16,6 +17,11 @@ winCount = 0
 lossCount = 0
 drawCount = 0
 roundCount = 0
+winningDictionary = {
+    'rock': 'scissors',
+    'paper': 'rock',
+    'scissors': 'paper'
+}
 #endregion
 
 #region ##### Functions #####
@@ -45,7 +51,7 @@ def display_moves(playerMove, computerMove):
 def decide_outcome(playerMove, computerMove):
     if playerMove == computerMove:
         return 1
-    elif (playerMove == "rock" and computerMove == "scissors") or (playerMove == "paper" and computerMove == "rock") or (playerMove == "scissors" and computerMove == "paper"):
+    elif winningDictionary[playerMove] == computerMove:
         return 2
     return 3
 
