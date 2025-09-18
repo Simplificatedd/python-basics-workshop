@@ -4,6 +4,7 @@
 # Enhancement 4: Keep track and display the number of wins, losses, and draws
 # Enhancement 5: Keep track and display the number of rounds played and saves the player's name
 # Enhancement 6: Refactor winning logic to use a dictionary
+# Enhancement 7: Add randomized winner and loser messages, capitalize names and moves
 
 #region ##### import #####
 import random
@@ -22,6 +23,9 @@ winningDictionary = {
     'paper': 'rock',
     'scissors': 'paper'
 }
+winMessage = ["Great job!", "Well played!", "You're on fire!", "Keep it up!", "Fantastic!"]
+loseMessage = ["Don't give up!", "Keep trying!", "You'll win the next round!", "Stay positive!", "Chin up!"]
+drawMessage = ["You think like CPU!", "So close!", "Stalemate!", "Close one!", "Held you off!"]
 #endregion
 
 #region ##### Functions #####
@@ -45,6 +49,8 @@ def get_computer_move():
     return computerMove
 
 def display_moves(playerMove, computerMove):
+    playerMove = playerMove.capitalize()
+    computerMove = computerMove.capitalize()
     print(f"You chose {playerMove}.")
     print(f"CPU chose {computerMove}.")
 
@@ -57,13 +63,16 @@ def decide_outcome(playerMove, computerMove):
 
 def show_conclusion(outcome, drawCount, winCount, lossCount):
     if outcome == 1:
-        print("It is a draw.\n")
+        print("\nIt is a draw.")
+        display_random_message(drawMessage)
         drawCount += 1
     elif outcome == 2:
-        print("You won!\n")
+        print("\nYou won!")
+        display_random_message(winMessage)
         winCount += 1
     elif outcome == 3:
-        print("You lost!\n")
+        print("\nYou lost!")
+        display_random_message(loseMessage)
         lossCount += 1
     return drawCount, winCount, lossCount
 
@@ -95,7 +104,10 @@ def get_player_name():
     if playerName.strip() == "":
         playerName = "Guest"
     print(f"Welcome, {playerName}! Let's play Rock, Paper, Scissors.\n")
-    return playerName
+    return playerName.capitalize()
+
+def display_random_message(messageList):
+    print(random.choice(messageList))
 #endregion
 
 #region ##### Main code #####
