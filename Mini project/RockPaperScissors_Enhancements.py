@@ -2,6 +2,7 @@
 # Enhancement 2: Allow user to keep playing until "quit" or "exit" is entered
 # Enhancement 3: Allow user to input "r", "p", "s", "q" or "e" as shortcuts for moves and exit commands
 # Enhancement 4: Keep track and display the number of wins, losses, and draws
+# Enhancement 5: Keep track and display the number of rounds played and saves the player's name
 
 #region ##### import #####
 import random
@@ -14,6 +15,7 @@ shortcutCommands = ['r', 'p', 's', 'q', 'e']
 winCount = 0
 lossCount = 0
 drawCount = 0
+roundCount = 0
 #endregion
 
 #region ##### Functions #####
@@ -73,15 +75,25 @@ def map_shortcuts(playerMove):
     else:
         return playerMove
     
-def display_stats(drawCount, winCount, lossCount):
+def display_stats(drawCount, winCount, lossCount, roundCount, playerName):
     print("\n-----Game Ended-----")
-    print("stats:\n")
-    print(f"Wins: {winCount}")
-    print(f"Losses: {lossCount}")
-    print(f"Draws: {drawCount}")
+    print(f"Thanks for playing, {playerName}!")
+    print("\nHere are your stats:\n")
+    print(f"No. of Rounds:\t{roundCount}")
+    print(f"Wins:\t\t{winCount}")
+    print(f"Losses:\t\t{lossCount}")
+    print(f"Draws:\t\t{drawCount}")
+
+def get_player_name():
+    playerName = input("Enter your name (leave blank for Guest): ")
+    if playerName.strip() == "":
+        playerName = "Guest"
+    print(f"Welcome, {playerName}! Let's play Rock, Paper, Scissors.\n")
+    return playerName
 #endregion
 
 #region ##### Main code #####
+playerName = get_player_name()
 playerMove = get_player_move()
 while(not check_exit(playerMove)):
 
@@ -96,5 +108,7 @@ while(not check_exit(playerMove)):
         print("Invalid move. Please enter 'Rock', 'Paper', or 'Scissors'.")
         playerMove = get_player_move()
 
-display_stats(drawCount, winCount, lossCount)
+    roundCount += 1
+
+display_stats(drawCount, winCount, lossCount, roundCount, playerName)
 #endregion
