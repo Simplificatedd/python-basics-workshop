@@ -1,6 +1,7 @@
 # Enhancement 1: Refactor the code to use functions
 # Enhancement 2: Allow user to keep playing until "quit" or "exit" is entered
 # Enhancement 3: Allow user to input "r", "p", "s", "q" or "e" as shortcuts for moves and exit commands
+# Enhancement 4: Keep track and display the number of wins, losses, and draws
 
 #region ##### import #####
 import random
@@ -10,6 +11,9 @@ import random
 PossibleMoves = ['rock', 'paper', 'scissors']
 ExitCommands = ['quit', 'exit']
 shortcutCommands = ['r', 'p', 's', 'q', 'e']
+winCount = 0
+lossCount = 0
+drawCount = 0
 #endregion
 
 #region ##### Functions #####
@@ -43,13 +47,17 @@ def decide_outcome(playerMove, computerMove):
         return 2
     return 3
 
-def show_conclusion(outcome):
+def show_conclusion(outcome, drawCount, winCount, lossCount):
     if outcome == 1:
         print("It is a draw.\n")
+        drawCount += 1
     elif outcome == 2:
         print("You won!\n")
+        winCount += 1
     elif outcome == 3:
         print("You lost!\n")
+        lossCount += 1
+    return drawCount, winCount, lossCount
 
 def map_shortcuts(playerMove):
     if playerMove == 'r':
@@ -64,6 +72,13 @@ def map_shortcuts(playerMove):
         return 'quit'
     else:
         return playerMove
+    
+def display_stats(drawCount, winCount, lossCount):
+    print("\n-----Game Ended-----")
+    print("stats:\n")
+    print(f"Wins: {winCount}")
+    print(f"Losses: {lossCount}")
+    print(f"Draws: {drawCount}")
 #endregion
 
 #region ##### Main code #####
@@ -74,11 +89,12 @@ while(not check_exit(playerMove)):
         computerMove = get_computer_move()
         display_moves(playerMove, computerMove)
         outcome = decide_outcome(playerMove, computerMove)
-        show_conclusion(outcome)
+        drawCount, winCount, lossCount = show_conclusion(outcome, drawCount, winCount, lossCount)
         playerMove = get_player_move()
+
     else:
         print("Invalid move. Please enter 'Rock', 'Paper', or 'Scissors'.")
         playerMove = get_player_move()
-        
-print("\n-----Game Ended-----")
+
+display_stats(drawCount, winCount, lossCount)
 #endregion
